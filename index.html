@@ -480,6 +480,30 @@
     }
     .secondary-button:hover { background: var(--pink-ghost); border-color: var(--pink); }
 
+    /* CTAボタンのバリエーション */
+    .cta-label {
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+      color: var(--ink-mid);
+      margin-bottom: 10px;
+    }
+    .line-button-blue  { background: #3B82C4; box-shadow: rgba(59,130,196,0.22) 0px 10px 24px 0px; }
+    .line-button-orange{ background: #E8905F; box-shadow: rgba(232,144,95,0.22) 0px 10px 24px 0px; }
+
+    /* テキスト入力欄 */
+    .text-input {
+      width: 100%;
+      padding: 16px 18px;
+      border: 1.5px solid var(--pink-light);
+      border-radius: 8px;
+      font-size: 15px;
+      font-family: inherit;
+      color: var(--ink);
+      background: var(--white);
+    }
+    .text-input:focus { outline: none; border-color: var(--pink); }
+
     /* アニメ */
     .screen { animation: fadeUp .3s cubic-bezier(.4,0,.2,1); }
     @keyframes fadeUp {
@@ -583,27 +607,26 @@ const RES = [
   {
     type: "現金一括購入",
     desc: "手元資金に余裕があり、長く同じ車に乗り続けたいあなたには、利息ゼロで総コストが最も低くなる現金一括購入がベストです。完全所有のため売却・カスタムのタイミングも自由です。",
-    reasons: ["利息ゼロで総支払額が3つの中で最も少ない","完全所有のため売却・カスタムが自由","購入直後から月々の車両の費用が発生しない"],
-    cta: "📞 購入について無料相談する",
-    ctaNote: "カーリースとの比較相談ももちろんOKです"
+    reasons: ["利息ゼロで総支払額が3つの中で最も少ない","完全所有のため売却・カスタムが自由","購入直後から月々の車両の費用が発生しない"]
   },
   {
     type: "ローン購入",
     desc: "手元のお金を残しながら車を所有したいあなたには、月々の支払いで無理なく乗れるカーローンが向いています。頭金を増やすほど総支払額が下がるので、手元資金と相談しながら計画するのがポイントです。",
-    reasons: ["まとまった現金を手元に残しながら車を持てる","所有権があるためカスタム・売却が自由","ローン完済後は維持費のみで乗り続けられる"],
-    cta: "📞 ローンについて無料相談する",
-    ctaNote: "カーリースとの比較相談ももちろんOKです"
+    reasons: ["まとまった現金を手元に残しながら車を持てる","所有権があるためカスタム・売却が自由","ローン完済後は維持費のみで乗り続けられる"]
   },
   {
     type: "カーリース",
     desc: "初期費用なし・月々定額コミコミ（自動車税・車検・点検すべて込み）で乗れるカーリースはあなたのライフスタイルにぴったりです。突発的な大きな出費がなく家計管理がしやすく、フラット7なら月々11,000円〜新車に乗れます。",
-    reasons: ["頭金・初期費用ゼロで新車に乗れる","自動車税・車検・点検がすべて月額コミコミ","突発的な大きな出費がなく家計が安定する"],
-    cta: "💬 LINEで無料相談する",
-    ctaNote: "来店不要・LINEで完結できます"
+    reasons: ["頭金・初期費用ゼロで新車に乗れる","自動車税・車検・点検がすべて月額コミコミ","突発的な大きな出費がなく家計が安定する"]
   }
 ];
 
+const RESERVE_LIFF_URL = "https://liff.line.me/2009256019-7hgQ5OYy?liff_id=2009256019-7hgQ5OYy&is=UQNaLnlKb6";
+const CHAT_FORM_URL = "https://liff.line.me/2009256019-a4HOqJ9h?liff_id=2009256019-a4HOqJ9h&code=LF94JDFR";
+const PHONE_FORM_URL = "https://liff.line.me/2009256019-a4HOqJ9h?liff_id=2009256019-a4HOqJ9h&code=LFULFSNI";
+
 let curQ = -1, scores = [0,0,0], leaseOut = false, busy = false;
+let resultType = '';
 
 const app = () => document.getElementById('app');
 
@@ -677,6 +700,7 @@ function buildResult() {
   const isTie = tops.length > 1;
   const win   = tops[0];
   const r     = RES[win];
+  resultType  = r.type;
   const sorted = fs.map((s,i)=>({i,s})).sort((a,b)=>b.s-a.s);
   const barMax = Math.max(...fs)||1;
   const cls    = ['rank1','rank2','rank3'];
@@ -688,7 +712,7 @@ function buildResult() {
       <h2 class="result-title">${r.type}</h2>
       <p class="result-sub">があなたに合っています</p>
 
-      ${isTie ? `<div class="tie-box">💡 複数の選択肢が近い結果でした。詳しくはLINEでお気軽にご相談ください。</div>` : ''}
+      ${isTie ? `<div class="tie-box">💡 複数の選択肢が近い結果でした。詳しくはお気軽にご相談ください。</div>` : ''}
 
       <div class="score-wrap">
         <div class="score-label">スコア比較</div>
@@ -716,11 +740,14 @@ function buildResult() {
       </div>
 
       <div class="note-box">
-        この診断結果は、入力内容をもとにした目安です。実際にはご状況やご希望によって最適な選択が変わります。より詳しい内容はLINEでご相談ください。
+        この診断結果は、入力内容をもとにした目安です。実際にはご状況やご希望によって最適な選択が変わります。より詳しい内容はご相談ください。
       </div>
 
-      <a class="line-button" href="https://lin.ee/OBb1DVz" target="_blank">${r.cta}</a>
-      <p style="font-size:12px;color:var(--ink-mid);text-align:center;margin-bottom:16px;">${r.ctaNote}</p>
+      <div class="cta-label">相談方法を選んでください</div>
+      <a class="line-button" href="${CHAT_FORM_URL}" target="_blank">💬 チャットで相談する</a>
+      <a class="line-button line-button-blue" href="${PHONE_FORM_URL}" target="_blank">📞 お電話で相談する</a>
+      <a class="line-button line-button-orange" href="${RESERVE_LIFF_URL}" target="_blank">🏬 店舗へ来店して相談する</a>
+
       <button class="secondary-button" onclick="restart()">もう一度診断する</button>
     </section>
     <div class="foot">© 株式会社ネクスト城南フラット7｜城南・西新・久山</div>
