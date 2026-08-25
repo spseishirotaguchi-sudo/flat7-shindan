@@ -641,55 +641,56 @@ function render() {
 }
 
 function buildStart() {
-  return `<div class="screen">
-    ${hdr()}
-    <div class="panel hero-panel">
-      <h1 class="hero-title">あなたに合う<br><em>車の持ち方</em>診断</h1>
-      <p class="hero-desc">「一括・ローン・カーリース」のどれが<br>自分に向いているか、7つの質問でわかります。</p>
-      <div class="hero-badges">
-        <span class="badge">📋 全7問</span>
-        <span class="badge">⏱ 約1分</span>
-        <span class="badge">🆓 無料</span>
-      </div>
-      <button class="primary-button" onclick="start()">診断をはじめる <span class="arrow">›</span></button>
-    </div>
-    <div class="foot">© 株式会社ネクスト城南フラット7｜城南・西新・久山</div>
-  </div>`;
+  return '<div class="screen">' +
+    hdr() +
+    '<div class="panel hero-panel">' +
+      '<h1 class="hero-title">あなたに合う<br><em>車の持ち方</em>診断</h1>' +
+      '<p class="hero-desc">「一括・ローン・カーリース」のどれが<br>自分に向いているか、7つの質問でわかります。</p>' +
+      '<div class="hero-badges">' +
+        '<span class="badge">📋 全7問</span>' +
+        '<span class="badge">⏱ 約1分</span>' +
+        '<span class="badge">🆓 無料</span>' +
+      '</div>' +
+      '<button class="primary-button" onclick="start()">診断をはじめる <span class="arrow">›</span></button>' +
+    '</div>' +
+    '<div class="foot">© 株式会社ネクスト城南フラット7｜城南・西新・久山</div>' +
+  '</div>';
 }
 
 function buildQ(i) {
   const q   = QS[i];
   const pct = Math.round(i / QS.length * 100);
-  return `<div class="screen">
-    ${hdr()}
-    <section class="panel diagnosis-panel">
-      <div class="progress-area">
-        <div class="progress-copy">
-          <span>質問 <span class="step-current">${q.num}</span> / ${QS.length}</span>
-          <span>${pct}%</span>
-        </div>
-        <div class="progress-track">
-          <div class="progress-fill" style="width:${pct}%"></div>
-        </div>
-      </div>
-      <article class="question-card">
-        <div class="question-kicker">Question ${String(q.num).padStart(2,'0')}</div>
-        <p class="question-text">${q.text}</p>
-      </article>
-      <div class="option-list">
-        ${q.opts.map((o,j) => `
-          <button class="option-item" id="opt${j}" onclick="pick(${j})">
-            <span class="option-alpha">${ABC[j]}</span>
-            <span>${o.text}</span>
-          </button>`).join('')}
-      </div>
-      <div class="nav-row">
-        <button class="ghost-button" onclick="back()" ${i===0?'disabled style="opacity:.4"':''}>← 戻る</button>
-        <button class="ghost-button" onclick="restart()">最初から</button>
-      </div>
-    </section>
-    <div class="foot">© 株式会社ネクスト城南フラット7｜城南・西新・久山</div>
-  </div>`;
+  const optsHtml = q.opts.map(function(o, j) {
+    return '<button class="option-item" id="opt' + j + '" onclick="pick(' + j + ')">' +
+      '<span class="option-alpha">' + ABC[j] + '</span>' +
+      '<span>' + o.text + '</span>' +
+    '</button>';
+  }).join('');
+  const backAttr = i === 0 ? 'disabled style="opacity:.4"' : '';
+  return '<div class="screen">' +
+    hdr() +
+    '<section class="panel diagnosis-panel">' +
+      '<div class="progress-area">' +
+        '<div class="progress-copy">' +
+          '<span>質問 <span class="step-current">' + q.num + '</span> / ' + QS.length + '</span>' +
+          '<span>' + pct + '%</span>' +
+        '</div>' +
+        '<div class="progress-track">' +
+          '<div class="progress-fill" style="width:' + pct + '%"></div>' +
+        '</div>' +
+      '</div>' +
+      '<article class="question-card">' +
+        '<div class="question-kicker">Question ' + String(q.num).padStart(2,'0') + '</div>' +
+        '<p class="question-text">' + q.text + '</p>' +
+      '</article>' +
+      '<div class="option-list">' + optsHtml + '</div>' +
+      '<div class="nav-row">' +
+        '<button class="ghost-button" onclick="back()" ' + backAttr + '>← 戻る</button>' +
+        '<button class="ghost-button" onclick="restart()">最初から</button>' +
+      '</div>' +
+    '</section>' +
+    '<div class="foot">© 株式会社ネクスト城南フラット7｜城南・西新・久山</div>' +
+  '</div>';
 }
 
 function buildResult() {
@@ -705,53 +706,53 @@ function buildResult() {
   const barMax = Math.max(...fs)||1;
   const cls    = ['rank1','rank2','rank3'];
 
-  return `<div class="screen">
-    ${hdr()}
-    <section class="panel result-panel">
-      <div class="result-kicker">診断結果</div>
-      <h2 class="result-title">${r.type}</h2>
-      <p class="result-sub">があなたに合っています</p>
+  const tieHtml = isTie ? '<div class="tie-box">💡 複数の選択肢が近い結果でした。詳しくはお気軽にご相談ください。</div>' : '';
 
-      ${isTie ? `<div class="tie-box">💡 複数の選択肢が近い結果でした。詳しくはお気軽にご相談ください。</div>` : ''}
+  const scoreRowsHtml = sorted.map(function(item, rank) {
+    const width = Math.round(item.s / barMax * 100);
+    return '<div class="score-row">' +
+      '<div class="score-name">' + NAMES[item.i] + '</div>' +
+      '<div class="score-track">' +
+        '<div class="score-bar ' + cls[rank] + '" style="width:' + width + '%"></div>' +
+      '</div>' +
+      '<div class="score-pt">' + item.s + 'pt</div>' +
+    '</div>';
+  }).join('');
 
-      <div class="score-wrap">
-        <div class="score-label">スコア比較</div>
-        ${sorted.map((item,rank)=>`
-          <div class="score-row">
-            <div class="score-name">${NAMES[item.i]}</div>
-            <div class="score-track">
-              <div class="score-bar ${cls[rank]}" style="width:${Math.round(item.s/barMax*100)}%"></div>
-            </div>
-            <div class="score-pt">${item.s}pt</div>
-          </div>`).join('')}
-      </div>
+  const reasonsHtml = r.reasons.map(function(reason) {
+    return '<div class="feature-item">' +
+      '<div class="feature-check">✓</div>' +
+      '<span>' + reason + '</span>' +
+    '</div>';
+  }).join('');
 
-      <div class="advice-box">
-        <div class="advice-label">おすすめ理由</div>
-        <p class="advice-text">${r.desc}</p>
-      </div>
-
-      <div class="feature-grid">
-        ${r.reasons.map(reason=>`
-          <div class="feature-item">
-            <div class="feature-check">✓</div>
-            <span>${reason}</span>
-          </div>`).join('')}
-      </div>
-
-      <div class="note-box">
-        この診断結果は、入力内容をもとにした目安です。実際にはご状況やご希望によって最適な選択が変わります。より詳しい内容はご相談ください。
-      </div>
-
-      <div class="cta-label">相談方法を選んでください</div>
-      <a class="line-button" href="${CHAT_FORM_URL}" target="_blank">💬 チャットで相談する</a>
-      <a class="line-button line-button-blue" href="${PHONE_FORM_URL}" target="_blank">📞 お電話で相談する</a>
-      <a class="line-button line-button-orange" href="${RESERVE_LIFF_URL}" target="_blank">🏬 店舗へ来店して相談する</a>
-
-      <button class="secondary-button" onclick="restart()">もう一度診断する</button>
-    </section>
-    <div class="foot">© 株式会社ネクスト城南フラット7｜城南・西新・久山</div>
-  </div>`;
+  return '<div class="screen">' +
+    hdr() +
+    '<section class="panel result-panel">' +
+      '<div class="result-kicker">診断結果</div>' +
+      '<h2 class="result-title">' + r.type + '</h2>' +
+      '<p class="result-sub">があなたに合っています</p>' +
+      tieHtml +
+      '<div class="score-wrap">' +
+        '<div class="score-label">スコア比較</div>' +
+        scoreRowsHtml +
+      '</div>' +
+      '<div class="advice-box">' +
+        '<div class="advice-label">おすすめ理由</div>' +
+        '<p class="advice-text">' + r.desc + '</p>' +
+      '</div>' +
+      '<div class="feature-grid">' + reasonsHtml + '</div>' +
+      '<div class="note-box">' +
+        'この診断結果は、入力内容をもとにした目安です。実際にはご状況やご希望によって最適な選択が変わります。より詳しい内容はご相談ください。' +
+      '</div>' +
+      '<div class="cta-label">相談方法を選んでください</div>' +
+      '<a class="line-button" href="' + CHAT_FORM_URL + '" target="_blank">💬 チャットで相談する</a>' +
+      '<a class="line-button line-button-blue" href="' + PHONE_FORM_URL + '" target="_blank">📞 お電話で相談する</a>' +
+      '<a class="line-button line-button-orange" href="' + RESERVE_LIFF_URL + '" target="_blank">🏬 店舗へ来店して相談する</a>' +
+      '<button class="secondary-button" onclick="restart()">もう一度診断する</button>' +
+    '</section>' +
+    '<div class="foot">© 株式会社ネクスト城南フラット7｜城南・西新・久山</div>' +
+  '</div>';
 }
 
 function start()   { curQ=0; scores=[0,0,0]; leaseOut=false; busy=false; render(); }
