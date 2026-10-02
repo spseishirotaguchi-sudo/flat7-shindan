@@ -533,6 +533,7 @@
 
 <div class="page" id="app"><!-- JS が描画 --></div>
 
+<script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 <script>
 const QS = [
   {
@@ -625,7 +626,52 @@ const RESERVE_LIFF_URL = "https://liff.line.me/2009256019-7hgQ5OYy?liff_id=20092
 const CHAT_FORM_URL = "https://liff.line.me/2009256019-a4HOqJ9h?liff_id=2009256019-a4HOqJ9h&code=LF94JDFR";
 const PHONE_FORM_URL = "https://liff.line.me/2009256019-a4HOqJ9h?liff_id=2009256019-a4HOqJ9h&code=LFULFSNI";
 
+/* ---------- 回答の保存（おすすめ車診断と同じ GAS・スプレッドシートに記録） ----------
+   LIFF から開かれたときは LINE の本人確認（IDトークン）付きで送り、ユーザー一覧にも載る。
+   LIFF_ID が空、または LINE の外で開かれたときは「匿名」として持ち方診断ログにだけ残る。
+   ※ bex.jp の CMS が「ドル記号＋波かっこ」の書き方を壊すため、ここでも文字列は + でつなぐこと */
+const SAVE_URL = "https://script.google.com/macros/s/AKfycbyRYYDOO84I_MDtQeB9hI-usplWJrd9B0P2VchxZGEtYjqZHX86YDHuFRwY7j8Vnv17Sg/exec";
+const LIFF_ID = ""; // LIFF「車の持ち方診断」を作ったら、そのIDを入れる
+const liffReady = (window.liff && LIFF_ID
+  ? liff.init({ liffId: LIFF_ID }).then(function () { return true; }).catch(function () { return false; })
+  : Promise.resolve(false));
+
+function anonId() {
+  try {
+    let id = localStorage.getItem("flat7_motikata_anon");
+    if (!id) {
+      id = "a" + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+      localStorage.setItem("flat7_motikata_anon", id);
+    }
+    return id;
+  } catch (e) {
+    return "";
+  }
+}
+
+// 結果を表示したら1回だけ送る。記録に失敗しても診断の表示には影響させない
+function saveResult() {
+  liffReady.then(function (ok) {
+    const idToken = ok && liff.isLoggedIn() ? liff.getIDToken() : "";
+    return fetch(SAVE_URL, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify({
+        action: "motikata",
+        idToken: idToken || "",
+        inLine: !!(ok && liff.isInClient()),
+        anonId: anonId(),
+        answers: answers,
+        scores: lastScores,
+        result: resultType,
+        tie: lastTie
+      })
+    });
+  }).catch(function () {});
+}
+
 let curQ = -1, scores = [0,0,0], leaseOut = false, busy = false;
+let answers = [], lastScores = [0,0,0], lastTie = false;
 let resultType = '';
 
 const app = () => document.getElementById('app');
@@ -702,6 +748,8 @@ function buildResult() {
   const win   = tops[0];
   const r     = RES[win];
   resultType  = r.type;
+  lastScores  = fs;
+  lastTie     = isTie;
   const sorted = fs.map((s,i)=>({i,s})).sort((a,b)=>b.s-a.s);
   const barMax = Math.max(...fs)||1;
   const cls    = ['rank1','rank2','rank3'];
@@ -744,6 +792,7 @@ function buildResult() {
       '<div class="feature-grid">' + reasonsHtml + '</div>' +
       '<div class="note-box">' +
         'この診断結果は、入力内容をもとにした目安です。実際にはご状況やご希望によって最適な選択が変わります。より詳しい内容はご相談ください。' +
+        '診断の回答内容は、ご提案のために記録させていただきます。' +
       '</div>' +
       '<div class="cta-label">相談方法を選んでください</div>' +
       '<a class="line-button" href="' + CHAT_FORM_URL + '" target="_blank">💬 チャットで相談する</a>' +
@@ -755,8 +804,8 @@ function buildResult() {
   '</div>';
 }
 
-function start()   { curQ=0; scores=[0,0,0]; leaseOut=false; busy=false; render(); }
-function restart() { curQ=-1; scores=[0,0,0]; leaseOut=false; busy=false; render(); }
+function start()   { curQ=0; scores=[0,0,0]; leaseOut=false; busy=false; answers=[]; render(); }
+function restart() { curQ=-1; scores=[0,0,0]; leaseOut=false; busy=false; answers=[]; render(); }
 function back()    { if(curQ>0){ curQ--; render(); } }
 
 function pick(j) {
@@ -766,7 +815,8 @@ function pick(j) {
   document.getElementById('opt'+j)?.classList.add('selected');
   scores[0]+=o.s[0]; scores[1]+=o.s[1]; scores[2]+=o.s[2];
   if (o.lo) leaseOut = true;
-  setTimeout(() => { curQ++; busy=false; render(); }, 230);
+  answers[curQ] = o.text.replace(/\n/g, "");
+  setTimeout(() => { curQ++; busy=false; render(); if (curQ === QS.length) saveResult(); }, 230);
 }
 
 render();
