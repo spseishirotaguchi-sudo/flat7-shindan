@@ -671,7 +671,7 @@ function saveResult() {
 }
 
 let curQ = -1, scores = [0,0,0], leaseOut = false, busy = false;
-let answers = [], lastScores = [0,0,0], lastTie = false;
+let answers = [], picked = [], lastScores = [0,0,0], lastTie = false;
 let resultType = '';
 
 const app = () => document.getElementById('app');
@@ -804,18 +804,28 @@ function buildResult() {
   '</div>';
 }
 
-function start()   { curQ=0; scores=[0,0,0]; leaseOut=false; busy=false; answers=[]; render(); }
-function restart() { curQ=-1; scores=[0,0,0]; leaseOut=false; busy=false; answers=[]; render(); }
+function start()   { curQ=0; scores=[0,0,0]; leaseOut=false; busy=false; answers=[]; picked=[]; render(); }
+function restart() { curQ=-1; scores=[0,0,0]; leaseOut=false; busy=false; answers=[]; picked=[]; render(); }
 function back()    { if(curQ>0){ curQ--; render(); } }
+
+// 各質問で最後に選んだ答えだけから点数を数え直す（「戻る」で答え直しても二重に足されないように）
+function recount() {
+  scores = [0,0,0]; leaseOut = false;
+  picked.forEach(function (j, q) {
+    const o = QS[q].opts[j];
+    scores[0]+=o.s[0]; scores[1]+=o.s[1]; scores[2]+=o.s[2];
+    if (o.lo) leaseOut = true;
+  });
+}
 
 function pick(j) {
   if (busy) return;
   busy = true;
   const o = QS[curQ].opts[j];
   document.getElementById('opt'+j)?.classList.add('selected');
-  scores[0]+=o.s[0]; scores[1]+=o.s[1]; scores[2]+=o.s[2];
-  if (o.lo) leaseOut = true;
-  answers[curQ] = o.text.replace(/\n/g, "");
+  picked[curQ] = j; picked.length = curQ + 1;
+  recount();
+  answers[curQ] = o.text.replace(/\n/g, ""); answers.length = curQ + 1;
   setTimeout(() => { curQ++; busy=false; render(); if (curQ === QS.length) saveResult(); }, 230);
 }
 
