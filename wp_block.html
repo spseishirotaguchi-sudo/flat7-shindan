@@ -1,0 +1,865 @@
+  <style>
+    /* WordPress テーマの見出し用フォント（明朝体）を打ち消して、元の診断と同じゴシック体にする */
+    #app h1, #app h2 { font-family: inherit; }
+
+    /* WordPress 固定ページに貼ったとき、テーマが診断の上に出す見出し・線・空白を隠す（おすすめ車診断と同じやり方） */
+    body:has(#app.page) .wp-site-blocks > header.wp-block-template-part,
+    body:has(#app.page) main.wp-block-group > :not(.entry-content):not(.wp-block-post-content),
+    body:has(#app.page) .entry-content > .wp-block-separator,
+    body:has(#app.page) .entry-content > .wp-block-spacer {
+      display: none !important;
+    }
+    body:has(#app.page),
+    body:has(#app.page) .wp-site-blocks,
+    body:has(#app.page) .wp-site-blocks > *,
+    body:has(#app.page) main.wp-block-group,
+    body:has(#app.page) .entry-content {
+      margin-top: 0 !important;
+      margin-block-start: 0 !important;
+      padding-top: 0 !important;
+    }
+    body:has(#app.page) .entry-content > .bg-wrap,
+    body:has(#app.page) .entry-content > #app.page {
+      margin-top: 0 !important;
+      margin-block-start: 0 !important;
+    }
+    body:has(#app.page) .entry-content,
+    body:has(#app.page) .is-layout-constrained > #app.page {
+      max-width: none !important;
+    }
+    /* テーマが左右に足す余白をなくし、スマホの横幅いっぱいに使う */
+    body:has(#app.page),
+    body:has(#app.page) .wp-site-blocks {
+      padding-left: 0 !important;
+      padding-right: 0 !important;
+    }
+    /* 上で左右の余白を消したぶん、テーマのフッター（コピーライト）が横にはみ出さないようにする */
+    body:has(#app.page) .wp-site-blocks .alignfull {
+      margin-left: 0 !important;
+      margin-right: 0 !important;
+    }
+
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+    :root {
+      --ink:        #30262D;
+      --ink-mid:    #9B5A78;
+      --ink-soft:   #B64A78;
+      --pink:       #E85F96;
+      --pink-mid:   #D17399;
+      --pink-light: #F0DCE6;
+      --pink-pale:  #F7E6EE;
+      --pink-ghost: #FFFAFD;
+      --peach:      rgba(255,236,206,0.66);
+      --coral:      rgba(255,196,167,0.58);
+      --white:      #FFFFFF;
+      --note-bg:    #FFF8E7;
+      --line-green: #06C755;
+      --card-shadow: rgba(209,115,153,0.16) 0px 18px 48px 0px;
+      --btn-shadow:  rgba(232,95,150,0.25) 0px 16px 32px 0px;
+    }
+
+    body {
+      font-family: -apple-system, "system-ui", "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic", Meiryo, sans-serif;
+      background: var(--white);
+      color: var(--ink);
+      font-size: 18px;
+      line-height: 1.6;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ── 背景装飾 ── */
+    .bg-wrap {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+    }
+    .bg-shape {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(60px);
+    }
+    .bg-shape-1 {
+      width: 380px; height: 380px;
+      background: var(--peach);
+      top: -80px; left: -100px;
+    }
+    .bg-shape-2 {
+      width: 300px; height: 300px;
+      background: var(--coral);
+      top: 40px; right: -80px;
+    }
+    .bg-shape-3 {
+      width: 250px; height: 250px;
+      background: rgba(232,95,150,0.08);
+      bottom: 100px; left: 50%;
+      transform: translateX(-50%);
+    }
+    .bg-dots {
+      position: absolute;
+      top: 0; right: 0;
+      width: 160px; height: 160px;
+      opacity: 0.18;
+      background-image: radial-gradient(var(--pink-mid) 1.5px, transparent 1.5px);
+      background-size: 18px 18px;
+    }
+
+    /* ── レイアウト ── */
+    .page {
+      position: relative;
+      z-index: 1;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 16px 16px 60px;
+    }
+
+    /* ── ロゴ・ヘッダー ── */
+    .site-header {
+      text-align: center;
+      margin-bottom: 14px;
+    }
+    .site-logo {
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.2em;
+      color: var(--ink-mid);
+      text-transform: uppercase;
+    }
+    .site-logo span { color: var(--pink); }
+
+    /* ── パネル共通 ── */
+    .panel {
+      width: 100%;
+      max-width: 440px;
+      background: rgba(255,255,255,0.94);
+      border: 1px solid var(--pink-light);
+      border-radius: 8px;
+      box-shadow: var(--card-shadow);
+    }
+
+    /* ── スタート画面 ── */
+    .hero-panel {
+      padding: 28px 24px 28px;
+      text-align: center;
+    }
+    .hero-kicker {
+      display: inline-block;
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.15em;
+      color: var(--ink-mid);
+      border: 1px solid var(--pink-light);
+      border-radius: 999px;
+      padding: 4px 16px;
+      margin-bottom: 18px;
+      background: var(--pink-ghost);
+    }
+    .hero-title {
+      font-size: 32px;
+      font-weight: 950;
+      line-height: 1.3;
+      color: var(--ink);
+      margin-bottom: 6px;
+    }
+    .hero-title em {
+      font-style: normal;
+      color: var(--pink);
+    }
+    .hero-title-dots {
+      display: inline-block;
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--pink);
+      margin: 0 2px;
+      vertical-align: middle;
+    }
+    .hero-desc {
+      font-size: 15px;
+      color: var(--ink-mid);
+      line-height: 1.7;
+      margin-bottom: 24px;
+    }
+    .hero-badges {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 28px;
+    }
+    .badge {
+      font-size: 13px;
+      color: var(--ink-mid);
+      background: var(--pink-pale);
+      border-radius: 999px;
+      padding: 5px 14px;
+      font-weight: 600;
+    }
+
+    /* ── プライマリボタン ── */
+    .primary-button {
+      display: inline-block;
+      width: 100%;
+      padding: 16px 24px;
+      background: linear-gradient(135deg, #E85F96 0%, #D17399 100%);
+      border: none;
+      border-radius: 999px;
+      color: var(--white);
+      font-size: 18px;
+      font-weight: 800;
+      letter-spacing: 0.02em;
+      cursor: pointer;
+      box-shadow: var(--btn-shadow);
+      transition: opacity .2s, transform .15s;
+      text-decoration: none;
+    }
+    .primary-button:active { opacity: .88; transform: scale(.98); }
+    .primary-button .arrow { margin-left: 6px; }
+
+    /* ── 診断パネル ── */
+    .diagnosis-panel {
+      padding: 22px 22px 20px;
+      width: 100%;
+      max-width: 440px;
+    }
+
+    /* プログレス */
+    .progress-area {
+      background: rgba(255,252,254,0.95);
+      border: 1px solid var(--pink-light);
+      border-radius: 8px;
+      padding: 14px 18px;
+      margin-bottom: 22px;
+    }
+    .progress-copy {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--ink-mid);
+      margin-bottom: 8px;
+    }
+    .progress-copy .step-current { color: var(--pink); }
+    .progress-track {
+      height: 6px;
+      background: var(--pink-pale);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #E85F96, #D17399);
+      border-radius: 999px;
+      transition: width .5s cubic-bezier(.4,0,.2,1);
+    }
+
+    /* 質問カード */
+    .question-card {
+      padding: 4px 0 8px;
+      margin-bottom: 18px;
+    }
+    .question-kicker {
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.15em;
+      color: var(--pink);
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+    .question-text {
+      font-size: 20px;
+      font-weight: 800;
+      line-height: 1.5;
+      color: var(--ink);
+      white-space: pre-wrap;
+    }
+
+    /* 選択肢 */
+    .option-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+    .option-item {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 16px 18px;
+      background: var(--white);
+      border: 1.5px solid var(--pink-light);
+      border-radius: 8px;
+      color: var(--ink);
+      font-size: 15px;
+      font-weight: 600;
+      line-height: 1.55;
+      text-align: left;
+      cursor: pointer;
+      transition: border-color .18s, background .18s, box-shadow .18s, transform .1s;
+      white-space: pre-wrap;
+    }
+    .option-item:hover {
+      border-color: var(--pink);
+      background: var(--pink-ghost);
+      box-shadow: 0 4px 16px rgba(232,95,150,0.1);
+    }
+    .option-item:active { transform: scale(.985); }
+    .option-item.selected {
+      border-color: var(--pink);
+      background: rgba(232,95,150,0.07);
+      box-shadow: 0 4px 16px rgba(232,95,150,0.12);
+    }
+    .option-alpha {
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      background: var(--pink-pale);
+      border: 1.5px solid var(--pink-light);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--ink-mid);
+      flex-shrink: 0;
+      transition: all .18s;
+    }
+    .option-item.selected .option-alpha {
+      background: var(--pink);
+      border-color: var(--pink);
+      color: var(--white);
+    }
+
+    /* ナビ行 */
+    .nav-row {
+      display: flex;
+      gap: 8px;
+    }
+    .ghost-button {
+      padding: 8px 16px;
+      background: var(--pink-ghost);
+      border: 1px solid var(--pink-light);
+      border-radius: 8px;
+      color: var(--ink-mid);
+      font-size: 13px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: background .18s, border-color .18s;
+    }
+    .ghost-button:hover { background: var(--pink-pale); border-color: var(--pink); }
+
+    /* ── 結果パネル ── */
+    .result-panel {
+      padding: 28px 22px 24px;
+      width: 100%;
+      max-width: 440px;
+    }
+    .result-kicker {
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.15em;
+      color: var(--ink-mid);
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+    .result-title {
+      font-size: 26px;
+      font-weight: 950;
+      color: var(--pink);
+      line-height: 1.3;
+      margin-bottom: 4px;
+    }
+    .result-sub {
+      font-size: 15px;
+      color: var(--ink-mid);
+      margin-bottom: 24px;
+    }
+
+    /* スコアバー */
+    .score-wrap { margin-bottom: 22px; }
+    .score-label {
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+      color: var(--ink-mid);
+      margin-bottom: 10px;
+    }
+    .score-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+    .score-name { font-size: 13px; color: var(--ink-mid); width: 90px; flex-shrink: 0; font-weight: 600; }
+    .score-track {
+      flex: 1;
+      height: 7px;
+      background: var(--pink-pale);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+    .score-bar {
+      height: 100%;
+      border-radius: 999px;
+      transition: width .7s cubic-bezier(.4,0,.2,1) .1s;
+    }
+    .score-bar.rank1 { background: linear-gradient(90deg,#E85F96,#D17399); }
+    .score-bar.rank2 { background: var(--pink-light); }
+    .score-bar.rank3 { background: #F0ECF0; }
+    .score-pt { font-size: 12px; color: var(--ink-mid); width: 28px; text-align: right; font-weight: 700; }
+
+    /* アドバイスボックス */
+    .advice-box {
+      border: 1px solid rgba(232,95,150,0.26);
+      border-radius: 8px;
+      padding: 18px;
+      margin-bottom: 16px;
+    }
+    .advice-label {
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      color: var(--pink);
+      margin-bottom: 8px;
+    }
+    .advice-text {
+      font-size: 14px;
+      color: var(--ink);
+      line-height: 1.75;
+    }
+
+    /* 理由リスト */
+    .feature-grid { margin-bottom: 20px; }
+    .feature-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--pink-pale);
+      font-size: 15px;
+      color: var(--ink);
+      line-height: 1.55;
+    }
+    .feature-item:last-child { border-bottom: none; }
+    .feature-check {
+      width: 22px; height: 22px;
+      border-radius: 50%;
+      background: var(--pink-pale);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; color: var(--pink);
+      font-weight: 800;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    /* ノートボックス */
+    .note-box {
+      background: var(--note-bg);
+      border-radius: 8px;
+      padding: 14px 16px;
+      font-size: 13px;
+      color: var(--ink-mid);
+      line-height: 1.65;
+      margin-bottom: 22px;
+    }
+
+    /* タイ注記 */
+    .tie-box {
+      background: var(--pink-pale);
+      border: 1px solid var(--pink-light);
+      border-radius: 8px;
+      padding: 12px 16px;
+      font-size: 14px;
+      color: var(--ink-mid);
+      line-height: 1.6;
+      margin-bottom: 18px;
+    }
+
+    /* LINE ボタン */
+    .line-button {
+      display: block;
+      width: 100%;
+      padding: 16px;
+      background: var(--line-green);
+      border: none;
+      border-radius: 8px;
+      color: var(--white);
+      font-size: 16px;
+      font-weight: 800;
+      text-align: center;
+      text-decoration: none;
+      cursor: pointer;
+      box-shadow: rgba(6,199,85,0.22) 0px 10px 24px 0px;
+      margin-bottom: 10px;
+      transition: opacity .2s, transform .1s;
+    }
+    .line-button:active { opacity: .88; transform: scale(.98); }
+
+    /* セカンダリボタン */
+    .secondary-button {
+      display: block;
+      width: 100%;
+      padding: 14px;
+      background: var(--white);
+      border: 1px solid var(--pink-light);
+      border-radius: 8px;
+      color: var(--ink-soft);
+      font-size: 15px;
+      font-weight: 800;
+      text-align: center;
+      cursor: pointer;
+      transition: background .18s, border-color .18s;
+    }
+    .secondary-button:hover { background: var(--pink-ghost); border-color: var(--pink); }
+
+    /* CTAボタンのバリエーション */
+    .cta-label {
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+      color: var(--ink-mid);
+      margin-bottom: 10px;
+    }
+    .line-button-blue  { background: #3B82C4; box-shadow: rgba(59,130,196,0.22) 0px 10px 24px 0px; }
+    .line-button-orange{ background: #E8905F; box-shadow: rgba(232,144,95,0.22) 0px 10px 24px 0px; }
+
+    /* テキスト入力欄 */
+    .text-input {
+      width: 100%;
+      padding: 16px 18px;
+      border: 1.5px solid var(--pink-light);
+      border-radius: 8px;
+      font-size: 15px;
+      font-family: inherit;
+      color: var(--ink);
+      background: var(--white);
+    }
+    .text-input:focus { outline: none; border-color: var(--pink); }
+
+    /* アニメ */
+    .screen { animation: fadeUp .3s cubic-bezier(.4,0,.2,1); }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* フッター */
+    .foot {
+      margin-top: 28px;
+      font-size: 11px;
+      color: #C8A8B8;
+      text-align: center;
+      letter-spacing: 0.04em;
+    }
+  </style>
+
+<!-- 背景装飾 -->
+<div class="bg-wrap">
+  <div class="bg-shape bg-shape-1"></div>
+  <div class="bg-shape bg-shape-2"></div>
+  <div class="bg-shape bg-shape-3"></div>
+  <div class="bg-dots"></div>
+</div>
+
+<div class="page" id="app"><!-- JS が描画 --></div>
+
+<script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+<script>
+const QS = [
+  {
+    num: 1,
+    text: "今、車両代に使える手元の\n現金・貯金はどのくらいですか？",
+    opts: [
+      { text: "車両代を全額出しても\n生活費・貯金に余裕がある",       s:[4,1,1] },
+      { text: "頭金は出せるが、\n全額を一気に出すのは難しい",         s:[0,4,1] },
+      { text: "まとまった出費は避けたい、\nまたは頭金も難しい",       s:[0,0,4] }
+    ]
+  },
+  {
+    num: 2,
+    text: "年間どのくらい\n車を運転しますか？",
+    opts: [
+      { text: "年間1万km以下\n（買い物・近距離通勤程度）",            s:[1,1,4] },
+      { text: "年間1〜2万km\n（通勤＋週末ドライブ）",                s:[1,3,2] },
+      { text: "年間2万km以上\n（長距離通勤・仕事で毎日使う）",        s:[4,3,0], lo:true }
+    ]
+  },
+  {
+    num: 3,
+    text: "何年くらい同じ車に\n乗り続けたいですか？",
+    opts: [
+      { text: "5年以内で\n新しい車に乗り換えたい",                    s:[1,4,0] },
+      { text: "6〜8年は\n乗り続けたい",                              s:[1,2,4] },
+      { text: "10年以上\n乗り続けたい",                              s:[4,1,1] }
+    ]
+  },
+  {
+    num: 4,
+    text: "お車を購入するにあたって、\n支払い方法はどうしたいですか？",
+    opts: [
+      { text: "できれば一括で\n支払いたい",                         s:[4,0,0] },
+      { text: "ボーナス払いを併用して\n月々の負担を抑えたい",         s:[0,3,3] },
+      { text: "毎月の定額払いを\n希望する",                          s:[0,1,4] }
+    ]
+  },
+  {
+    num: 5,
+    text: "車のカスタム（改造・改装・\nパーツ交換など）はしたいですか？",
+    opts: [
+      { text: "自分好みに仕上げたい・\nこだわりたい",                  s:[3,3,0] },
+      { text: "カスタムには興味なし、\n普通に乗れれば十分",            s:[1,1,4] },
+      { text: "アクセサリーをつける\n程度はしたい",                    s:[1,1,2] }
+    ]
+  },
+  {
+    num: 6,
+    text: "お仕事の形態を\n教えてください",
+    opts: [
+      { text: "個人事業主・フリーランス・\n会社経営者",                s:[1,0,4] },
+      { text: "会社員・公務員・\nパート・アルバイト",                  s:[1,3,1] },
+      { text: "専業主婦・学生・\nその他",                             s:[1,2,2] }
+    ]
+  },
+  {
+    num: 7,
+    text: "車を将来売って、\n次の購入資金に充てたいですか？",
+    opts: [
+      { text: "売却益を次の車の資金に充てたい・\n資産として手元に残したい",  s:[4,2,0] },
+      { text: "売ることには\n特にこだわらない",                              s:[1,1,3] },
+      { text: "売ることより\n気軽に乗り換えられる方が大事",                  s:[0,1,4] }
+    ]
+  }
+];
+
+const NAMES = ["現金一括購入","ローン購入","カーリース"];
+const ABC   = ["A","B","C"];
+
+const RES = [
+  {
+    type: "現金一括購入",
+    desc: "手元資金に余裕があり、長く同じ車に乗り続けたいあなたには、利息ゼロで総コストが最も低くなる現金一括購入がベストです。完全所有のため売却・カスタムのタイミングも自由です。",
+    reasons: ["利息ゼロで総支払額が3つの中で最も少ない","完全所有のため売却・カスタムが自由","購入直後から月々の車両の費用が発生しない"]
+  },
+  {
+    type: "ローン購入",
+    desc: "手元のお金を残しながら車を所有したいあなたには、月々の支払いで無理なく乗れるカーローンが向いています。頭金を増やすほど総支払額が下がるので、手元資金と相談しながら計画するのがポイントです。",
+    reasons: ["まとまった現金を手元に残しながら車を持てる","所有権があるためカスタム・売却が自由","ローン完済後は維持費のみで乗り続けられる"]
+  },
+  {
+    type: "カーリース",
+    desc: "初期費用なし・月々定額コミコミ（自動車税・車検・点検すべて込み）で乗れるカーリースはあなたのライフスタイルにぴったりです。突発的な大きな出費がなく家計管理がしやすく、フラット7なら月々11,000円〜新車に乗れます。",
+    reasons: ["頭金・初期費用ゼロで新車に乗れる","自動車税・車検・点検がすべて月額コミコミ","突発的な大きな出費がなく家計が安定する"]
+  }
+];
+
+const RESERVE_LIFF_URL = "https://liff.line.me/2009256019-7hgQ5OYy?liff_id=2009256019-7hgQ5OYy&is=UQNaLnlKb6";
+const CHAT_FORM_URL = "https://liff.line.me/2009256019-a4HOqJ9h?liff_id=2009256019-a4HOqJ9h&code=LF94JDFR";
+const PHONE_FORM_URL = "https://liff.line.me/2009256019-a4HOqJ9h?liff_id=2009256019-a4HOqJ9h&code=LFULFSNI";
+
+/* ---------- 回答の保存（おすすめ車診断と同じ GAS・スプレッドシートに記録） ----------
+   LIFF から開かれたときは LINE の本人確認（IDトークン）付きで送り、ユーザー一覧にも載る。
+   LIFF_ID が空、または LINE の外で開かれたときは「匿名」として持ち方診断ログにだけ残る。
+   ※ bex.jp の CMS が「ドル記号＋波かっこ」の書き方を壊すため、ここでも文字列は + でつなぐこと */
+const SAVE_URL = "https://script.google.com/macros/s/AKfycbyRYYDOO84I_MDtQeB9hI-usplWJrd9B0P2VchxZGEtYjqZHX86YDHuFRwY7j8Vnv17Sg/exec";
+const LIFF_ID = ""; // LIFF「車の持ち方診断」を作ったら、そのIDを入れる
+const liffReady = (window.liff && LIFF_ID
+  ? liff.init({ liffId: LIFF_ID }).then(function () { return true; }).catch(function () { return false; })
+  : Promise.resolve(false));
+
+function anonId() {
+  try {
+    let id = localStorage.getItem("flat7_motikata_anon");
+    if (!id) {
+      id = "a" + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+      localStorage.setItem("flat7_motikata_anon", id);
+    }
+    return id;
+  } catch (e) {
+    return "";
+  }
+}
+
+// 結果を表示したら1回だけ送る。記録に失敗しても診断の表示には影響させない
+function saveResult() {
+  liffReady.then(function (ok) {
+    const idToken = ok && liff.isLoggedIn() ? liff.getIDToken() : "";
+    return fetch(SAVE_URL, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify({
+        action: "motikata",
+        idToken: idToken || "",
+        inLine: !!(ok && liff.isInClient()),
+        anonId: anonId(),
+        answers: answers,
+        scores: lastScores,
+        result: resultType,
+        tie: lastTie
+      })
+    });
+  }).catch(function () {});
+}
+
+let curQ = -1, scores = [0,0,0], leaseOut = false, busy = false;
+let answers = [], picked = [], lastScores = [0,0,0], lastTie = false;
+let resultType = '';
+
+const app = () => document.getElementById('app');
+
+function hdr() {
+  return `<div class="site-header"><div class="site-logo">株式会社ネクスト城南　<span>フラット７</span></div></div>`;
+}
+
+function render() {
+  if (curQ === -1)             app().innerHTML = buildStart();
+  else if (curQ < QS.length)  app().innerHTML = buildQ(curQ);
+  else                         app().innerHTML = buildResult();
+}
+
+function buildStart() {
+  return '<div class="screen">' +
+    hdr() +
+    '<div class="panel hero-panel">' +
+      '<h1 class="hero-title">あなたに合う<br><em>車の持ち方</em>診断</h1>' +
+      '<p class="hero-desc">「一括・ローン・カーリース」のどれが自分に向いているか、7つの質問でわかります。</p>' +
+      '<div class="hero-badges">' +
+        '<span class="badge">📋 全7問</span>' +
+        '<span class="badge">⏱ 約1分</span>' +
+        '<span class="badge">🆓 無料</span>' +
+      '</div>' +
+      '<button class="primary-button" onclick="start()">診断をはじめる <span class="arrow">›</span></button>' +
+    '</div>' +
+    '<div class="foot">© 株式会社ネクスト城南フラット7｜城南・西新・久山</div>' +
+  '</div>';
+}
+
+function buildQ(i) {
+  const q   = QS[i];
+  const pct = Math.round(i / QS.length * 100);
+  const optsHtml = q.opts.map(function(o, j) {
+    return '<button class="option-item" id="opt' + j + '" onclick="pick(' + j + ')">' +
+      '<span class="option-alpha">' + ABC[j] + '</span>' +
+      '<span>' + o.text + '</span>' +
+    '</button>';
+  }).join('');
+  const backAttr = i === 0 ? 'disabled style="opacity:.4"' : '';
+  return '<div class="screen">' +
+    hdr() +
+    '<section class="panel diagnosis-panel">' +
+      '<div class="progress-area">' +
+        '<div class="progress-copy">' +
+          '<span>質問 <span class="step-current">' + q.num + '</span> / ' + QS.length + '</span>' +
+          '<span>' + pct + '%</span>' +
+        '</div>' +
+        '<div class="progress-track">' +
+          '<div class="progress-fill" style="width:' + pct + '%"></div>' +
+        '</div>' +
+      '</div>' +
+      '<article class="question-card">' +
+        '<div class="question-kicker">Question ' + String(q.num).padStart(2,'0') + '</div>' +
+        '<p class="question-text">' + q.text + '</p>' +
+      '</article>' +
+      '<div class="option-list">' + optsHtml + '</div>' +
+      '<div class="nav-row">' +
+        '<button class="ghost-button" onclick="back()" ' + backAttr + '>← 戻る</button>' +
+        '<button class="ghost-button" onclick="restart()">最初から</button>' +
+      '</div>' +
+    '</section>' +
+    '<div class="foot">© 株式会社ネクスト城南フラット7｜城南・西新・久山</div>' +
+  '</div>';
+}
+
+function buildResult() {
+  const fs = [...scores];
+  if (leaseOut) fs[2] = 0;
+  const mx    = Math.max(...fs);
+  const tops  = fs.reduce((a,s,i) => s===mx ? [...a,i] : a, []);
+  const isTie = tops.length > 1;
+  const win   = tops[0];
+  const r     = RES[win];
+  resultType  = r.type;
+  lastScores  = fs;
+  lastTie     = isTie;
+  const sorted = fs.map((s,i)=>({i,s})).sort((a,b)=>b.s-a.s);
+  const barMax = Math.max(...fs)||1;
+  const cls    = ['rank1','rank2','rank3'];
+
+  const tieHtml = isTie ? '<div class="tie-box">💡 複数の選択肢が近い結果でした。詳しくはお気軽にご相談ください。</div>' : '';
+
+  const scoreRowsHtml = sorted.map(function(item, rank) {
+    const width = Math.round(item.s / barMax * 100);
+    return '<div class="score-row">' +
+      '<div class="score-name">' + NAMES[item.i] + '</div>' +
+      '<div class="score-track">' +
+        '<div class="score-bar ' + cls[rank] + '" style="width:' + width + '%"></div>' +
+      '</div>' +
+      '<div class="score-pt">' + item.s + 'pt</div>' +
+    '</div>';
+  }).join('');
+
+  const reasonsHtml = r.reasons.map(function(reason) {
+    return '<div class="feature-item">' +
+      '<div class="feature-check">✓</div>' +
+      '<span>' + reason + '</span>' +
+    '</div>';
+  }).join('');
+
+  return '<div class="screen">' +
+    hdr() +
+    '<section class="panel result-panel">' +
+      '<div class="result-kicker">診断結果</div>' +
+      '<h2 class="result-title">' + r.type + '</h2>' +
+      '<p class="result-sub">があなたに合っています</p>' +
+      tieHtml +
+      '<div class="score-wrap">' +
+        '<div class="score-label">スコア比較</div>' +
+        scoreRowsHtml +
+      '</div>' +
+      '<div class="advice-box">' +
+        '<div class="advice-label">おすすめ理由</div>' +
+        '<p class="advice-text">' + r.desc + '</p>' +
+      '</div>' +
+      '<div class="feature-grid">' + reasonsHtml + '</div>' +
+      '<div class="note-box">' +
+        'この診断結果は、入力内容をもとにした目安です。実際にはご状況やご希望によって最適な選択が変わります。より詳しい内容はご相談ください。' +
+        '診断の回答内容は、ご提案のために記録させていただきます。' +
+      '</div>' +
+      '<div class="cta-label">相談方法を選んでください</div>' +
+      '<a class="line-button" href="' + CHAT_FORM_URL + '" target="_blank">💬 チャットで相談する</a>' +
+      '<a class="line-button line-button-blue" href="' + PHONE_FORM_URL + '" target="_blank">📞 お電話で相談する</a>' +
+      '<a class="line-button line-button-orange" href="' + RESERVE_LIFF_URL + '" target="_blank">🏬 店舗へ来店して相談する</a>' +
+      '<button class="secondary-button" onclick="restart()">もう一度診断する</button>' +
+    '</section>' +
+    '<div class="foot">© 株式会社ネクスト城南フラット7｜城南・西新・久山</div>' +
+  '</div>';
+}
+
+function start()   { curQ=0; scores=[0,0,0]; leaseOut=false; busy=false; answers=[]; picked=[]; render(); }
+function restart() { curQ=-1; scores=[0,0,0]; leaseOut=false; busy=false; answers=[]; picked=[]; render(); }
+function back()    { if(curQ>0){ curQ--; render(); } }
+
+// 各質問で最後に選んだ答えだけから点数を数え直す（「戻る」で答え直しても二重に足されないように）
+function recount() {
+  scores = [0,0,0]; leaseOut = false;
+  picked.forEach(function (j, q) {
+    const o = QS[q].opts[j];
+    scores[0]+=o.s[0]; scores[1]+=o.s[1]; scores[2]+=o.s[2];
+    if (o.lo) leaseOut = true;
+  });
+}
+
+function pick(j) {
+  if (busy) return;
+  busy = true;
+  const o = QS[curQ].opts[j];
+  document.getElementById('opt'+j)?.classList.add('selected');
+  picked[curQ] = j; picked.length = curQ + 1;
+  recount();
+  answers[curQ] = o.text.replace(/\n/g, ""); answers.length = curQ + 1;
+  setTimeout(() => { curQ++; busy=false; render(); if (curQ === QS.length) saveResult(); }, 230);
+}
+
+render();
+</script>

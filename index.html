@@ -5,6 +5,46 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <title>あなたに合う車の持ち方診断 | フラット7</title>
   <style>
+    /* WordPress テーマの見出し用フォント（明朝体）を打ち消して、元の診断と同じゴシック体にする */
+    #app h1, #app h2 { font-family: inherit; }
+
+    /* WordPress 固定ページに貼ったとき、テーマが診断の上に出す見出し・線・空白を隠す（おすすめ車診断と同じやり方） */
+    body:has(#app.page) .wp-site-blocks > header.wp-block-template-part,
+    body:has(#app.page) main.wp-block-group > :not(.entry-content):not(.wp-block-post-content),
+    body:has(#app.page) .entry-content > .wp-block-separator,
+    body:has(#app.page) .entry-content > .wp-block-spacer {
+      display: none !important;
+    }
+    body:has(#app.page),
+    body:has(#app.page) .wp-site-blocks,
+    body:has(#app.page) .wp-site-blocks > *,
+    body:has(#app.page) main.wp-block-group,
+    body:has(#app.page) .entry-content {
+      margin-top: 0 !important;
+      margin-block-start: 0 !important;
+      padding-top: 0 !important;
+    }
+    body:has(#app.page) .entry-content > .bg-wrap,
+    body:has(#app.page) .entry-content > #app.page {
+      margin-top: 0 !important;
+      margin-block-start: 0 !important;
+    }
+    body:has(#app.page) .entry-content,
+    body:has(#app.page) .is-layout-constrained > #app.page {
+      max-width: none !important;
+    }
+    /* テーマが左右に足す余白をなくし、スマホの横幅いっぱいに使う */
+    body:has(#app.page),
+    body:has(#app.page) .wp-site-blocks {
+      padding-left: 0 !important;
+      padding-right: 0 !important;
+    }
+    /* 上で左右の余白を消したぶん、テーマのフッター（コピーライト）が横にはみ出さないようにする */
+    body:has(#app.page) .wp-site-blocks .alignfull {
+      margin-left: 0 !important;
+      margin-right: 0 !important;
+    }
+
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
     :root {
@@ -81,13 +121,13 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding: 36px 16px 60px;
+      padding: 16px 16px 60px;
     }
 
     /* ── ロゴ・ヘッダー ── */
     .site-header {
       text-align: center;
-      margin-bottom: 28px;
+      margin-bottom: 14px;
     }
     .site-logo {
       font-size: 12px;
@@ -110,7 +150,7 @@
 
     /* ── スタート画面 ── */
     .hero-panel {
-      padding: 36px 28px 32px;
+      padding: 28px 24px 28px;
       text-align: center;
     }
     .hero-kicker {
@@ -691,7 +731,7 @@ function buildStart() {
     hdr() +
     '<div class="panel hero-panel">' +
       '<h1 class="hero-title">あなたに合う<br><em>車の持ち方</em>診断</h1>' +
-      '<p class="hero-desc">「一括・ローン・カーリース」のどれが<br>自分に向いているか、7つの質問でわかります。</p>' +
+      '<p class="hero-desc">「一括・ローン・カーリース」のどれが自分に向いているか、7つの質問でわかります。</p>' +
       '<div class="hero-badges">' +
         '<span class="badge">📋 全7問</span>' +
         '<span class="badge">⏱ 約1分</span>' +
