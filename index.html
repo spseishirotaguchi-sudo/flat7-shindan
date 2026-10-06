@@ -681,7 +681,7 @@ const PHONE_FORM_URL = "https://liff.line.me/2009256019-a4HOqJ9h?liff_id=2009256
    LIFF_ID が空、または LINE の外で開かれたときは「匿名」として持ち方診断ログにだけ残る。
    ※ bex.jp の CMS が「ドル記号＋波かっこ」の書き方を壊すため、ここでも文字列は + でつなぐこと */
 const SAVE_URL = "https://script.google.com/macros/s/AKfycbyRYYDOO84I_MDtQeB9hI-usplWJrd9B0P2VchxZGEtYjqZHX86YDHuFRwY7j8Vnv17Sg/exec";
-const LIFF_ID = ""; // LIFF「車の持ち方診断」を作ったら、そのIDを入れる
+const LIFF_ID = "2009256019-MGlx9MaA"; // LIFF「車の持ち方診断」（エンドポイント https://flat7lp-nj.bex.jp/carmotikata/）
 const liffReady = (window.liff && LIFF_ID
   ? liff.init({ liffId: LIFF_ID }).then(function () { return true; }).catch(function () { return false; })
   : Promise.resolve(false));
