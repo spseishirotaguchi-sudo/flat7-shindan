@@ -525,6 +525,16 @@
     .line-button-blue  { background: #3B82C4; box-shadow: rgba(59,130,196,0.22) 0px 10px 24px 0px; }
     .line-button-orange{ background: #E8905F; box-shadow: rgba(232,144,95,0.22) 0px 10px 24px 0px; }
 
+    /* 診断結果をトークに送るボタン（LINEの中で、公式アカウントとのトークから開いたときだけ表示） */
+    .primary-button:disabled { opacity: .6; cursor: default; transform: none; }
+    .send-talk-note {
+      margin: 8px 0 24px;
+      color: var(--ink-mid);
+      font-size: 13px;
+      font-weight: 700;
+      text-align: center;
+    }
+
     /* テキスト入力欄 */
     .text-input {
       width: 100%;
@@ -771,6 +781,34 @@ function buildQ(i) {
   '</div>';
 }
 
+/* ---------- 診断結果をトークに送る（おすすめ車診断と同じ仕組み） ----------
+   お客様の発言として「持ち方診断：結果名」をトークに送り、Lステップの自動応答（完全一致）がくわしい案内を返す。
+   sendMessages が使えるのは、LIFF で公式アカウントとの1対1トークから開いたときだけ */
+function canSendTalk() {
+  if (!window.liff || !liff.isInClient()) return false;
+  const context = liff.getContext();
+  return !!context && context.type === "utou";
+}
+function showSendTalk() {
+  liffReady.then(function (ok) {
+    const wrap = document.getElementById("sendTalkWrap");
+    if (wrap) wrap.hidden = !(ok && canSendTalk());
+  });
+}
+function sendTalk() {
+  const btn = document.getElementById("sendTalkBtn");
+  btn.disabled = true;
+  // この文言は Lステップの自動応答のキーワードと完全一致させること
+  liff.sendMessages([{ type: "text", text: "持ち方診断：" + resultType }])
+    .then(function () {
+      btn.textContent = "✓ トークに送りました";
+    })
+    .catch(function () {
+      btn.disabled = false;
+      btn.textContent = "送れませんでした。もう一度お試しください";
+    });
+}
+
 function buildResult() {
   const fs = [...scores];
   if (leaseOut) fs[2] = 0;
@@ -826,6 +864,10 @@ function buildResult() {
         'この診断結果は、入力内容をもとにした目安です。実際にはご状況やご希望によって最適な選択が変わります。より詳しい内容はご相談ください。' +
         '診断の回答内容は、ご提案のために記録させていただきます。' +
       '</div>' +
+      '<div id="sendTalkWrap" hidden>' +
+        '<button class="primary-button" id="sendTalkBtn" onclick="sendTalk()">📩 この結果をトークに送る</button>' +
+        '<p class="send-talk-note">トークに、くわしいご案内が届きます</p>' +
+      '</div>' +
       '<div class="cta-label">相談方法を選んでください</div>' +
       '<a class="line-button" href="' + CHAT_FORM_URL + '" target="_blank">💬 チャットで相談する</a>' +
       '<a class="line-button line-button-blue" href="' + PHONE_FORM_URL + '" target="_blank">📞 お電話で相談する</a>' +
@@ -858,7 +900,7 @@ function pick(j) {
   picked[curQ] = j; picked.length = curQ + 1;
   recount();
   answers[curQ] = o.text.replace(/\n/g, ""); answers.length = curQ + 1;
-  setTimeout(() => { curQ++; busy=false; render(); if (curQ === QS.length) saveResult(); }, 230);
+  setTimeout(() => { curQ++; busy=false; render(); if (curQ === QS.length) { saveResult(); showSendTalk(); } }, 230);
 }
 
 render();
