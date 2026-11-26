@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>あなたに合う車の持ち方診断 | フラット7</title>
+  <title>あなたに合う車の買い方診断 | フラット7</title>
   <style>
     /* WordPress テーマの見出し用フォント（明朝体）を打ち消して、元の診断と同じゴシック体にする */
     #app h1, #app h2 { font-family: inherit; }
@@ -779,7 +779,7 @@ function buildStart() {
   return '<div class="screen">' +
     hdr() +
     '<div class="panel hero-panel">' +
-      '<h1 class="hero-title">あなたに合う<br><em>車の持ち方</em>診断</h1>' +
+      '<h1 class="hero-title">あなたに合う<br><em>車の買い方</em>診断</h1>' +
       '<p class="hero-desc">「一括・ローン・カーリース」のどれが自分に向いているか、7つの質問でわかります。</p>' +
       '<div class="hero-badges">' +
         '<span class="badge">📋 全7問</span>' +
@@ -829,7 +829,9 @@ function buildQ(i) {
 }
 
 /* ---------- 診断結果をトークに送る（おすすめ車診断と同じ仕組み） ----------
-   お客様の発言として「持ち方診断：結果名」をトークに送り、Lステップの自動応答（完全一致）がくわしい案内を返す。
+   お客様の発言として「買い方診断：結果名」をトークに送り、Lステップの自動応答（完全一致）がくわしい案内を返し、タグを付ける。
+   結果が出たら、ページを開いてから最初の1回だけ自動で送る（2回目以降はボタンを押したときだけ）。
+   ※ お客様に見える名前は 2026-11-26 に「車の持ち方診断」→「車の買い方診断」へ変更（URL・社内のシート名は据え置き）
    sendMessages が使えるのは、LIFF で公式アカウントとの1対1トークから開いたときだけ */
 function canSendTalk() {
   if (!window.liff || !liff.isInClient()) return false;
@@ -839,16 +841,23 @@ function canSendTalk() {
 function showSendTalk() {
   liffReady.then(function (ok) {
     const wrap = document.getElementById("sendTalkWrap");
-    if (wrap) wrap.hidden = !(ok && canSendTalk());
+    const show = ok && canSendTalk();
+    if (wrap) wrap.hidden = !show;
+    if (show && !autoSentTalk) {
+      autoSentTalk = true;
+      sendTalk();
+    }
   });
 }
+let autoSentTalk = false;
 function sendTalk() {
   const btn = document.getElementById("sendTalkBtn");
+  if (!btn) return;
   btn.disabled = true;
   // この文言は Lステップの自動応答のキーワードと完全一致させること
-  liff.sendMessages([{ type: "text", text: "持ち方診断：" + resultType }])
+  liff.sendMessages([{ type: "text", text: "買い方診断：" + resultType }])
     .then(function () {
-      btn.textContent = "✓ トークに送りました";
+      btn.textContent = "✓ トークにも送りました";
     })
     .catch(function () {
       btn.disabled = false;
