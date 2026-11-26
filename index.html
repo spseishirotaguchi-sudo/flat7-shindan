@@ -703,7 +703,7 @@ function anonId() {
    入口のリンクの末尾に ?from=… を付けておくと、その入口も一緒に記録する（例：?from=richmenu）。
    LIFF は ?liff.state 付きで開いたあと ?from= 付きのURLへ開き直すことがあるので、
    そのときは開き直しを待ち、残ったページで1回だけ送る（二重に数えない）。送ったら返事は待たない */
-var OPEN_FROMS = ["richmenu", "4taku", "step1", "step3", "step30", "reply", "card"];
+var OPEN_FROMS = ["richmenu", "4taku", "aisatsu", "step1", "step3", "step30", "reply", "card"];
 function openFromParam() {
   try {
     var params = new URLSearchParams(location.search);
