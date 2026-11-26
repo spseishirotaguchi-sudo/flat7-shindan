@@ -699,6 +699,45 @@ function anonId() {
   }
 }
 
+/* ---------- 開いた回数の記録（どのツールを・どこから・誰が） ----------
+   入口のリンクの末尾に ?from=… を付けておくと、その入口も一緒に記録する（例：?from=richmenu）。
+   LIFF は ?liff.state 付きで開いたあと ?from= 付きのURLへ開き直すことがあるので、
+   そのときは開き直しを待ち、残ったページで1回だけ送る（二重に数えない）。送ったら返事は待たない */
+var OPEN_FROMS = ["richmenu", "4taku", "step1", "step3", "step30", "reply", "card"];
+function openFromParam() {
+  try {
+    var params = new URLSearchParams(location.search);
+    var from = params.get("from");
+    if (!from) {
+      var st = params.get("liff.state");
+      if (st) from = new URLSearchParams(st.replace(/^[^?]*\?/, "")).get("from");
+    }
+    return OPEN_FROMS.indexOf(from) >= 0 ? from : "";
+  } catch (e) {
+    return "";
+  }
+}
+function logOpen(tool, fromOverride) {
+  var from = fromOverride || openFromParam();
+  var reopening = false;
+  try { reopening = new URLSearchParams(location.search).has("liff.state"); } catch (e) {}
+  liffReady.then(function (ok) {
+    var send = function () {
+      var idToken = ok && liff.isLoggedIn() ? liff.getIDToken() : "";
+      var body = JSON.stringify({ action: "open", tool: tool, from: from, idToken: idToken || "", inLine: !!(ok && liff.isInClient()), anonId: anonId() });
+      try {
+        if (navigator.sendBeacon && navigator.sendBeacon(SAVE_URL, new Blob([body], { type: "text/plain;charset=utf-8" }))) return;
+      } catch (e) {}
+      try {
+        fetch(SAVE_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: body, keepalive: true }).catch(function () {});
+      } catch (e) {}
+    };
+    if (reopening) setTimeout(send, 1500);
+    else send();
+  });
+}
+logOpen("motikata");
+
 // 結果を表示したら1回だけ送る。記録に失敗しても診断の表示には影響させない
 function saveResult() {
   liffReady.then(function (ok) {
